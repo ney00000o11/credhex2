@@ -8,13 +8,23 @@ function App() {
   const [isDarkTheme, setIsDarkTheme] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [notification, setNotification] = useState(null);
+  const [isSupabaseConfigured, setIsSupabaseConfigured] = useState(false);
   const fileInputRef = useRef(null);
 
   useEffect(() => {
-    loadCertificates();
+    // Check if Supabase is properly configured
+    if (supabase) {
+      setIsSupabaseConfigured(true);
+      loadCertificates();
+    } else {
+      setIsSupabaseConfigured(false);
+      showNotification('Supabase not configured. Please set up your environment variables.', 'error');
+    }
   }, []);
 
   const loadCertificates = async () => {
+    if (!supabase) return;
+
     try {
       const { data, error } = await supabase.storage
         .from('certificates')
@@ -25,6 +35,7 @@ function App() {
 
       if (error) {
         console.error('Error loading certificates:', error);
+        showNotification('Error loading certificates. Please check your Supabase setup.', 'error');
         return;
       }
 
@@ -52,6 +63,11 @@ function App() {
   };
 
   const handleFileUpload = async (event) => {
+    if (!supabase) {
+      showNotification('Supabase not configured. Cannot upload files.', 'error');
+      return;
+    }
+
     const files = Array.from(event.target.files);
     if (files.length === 0) return;
 
@@ -94,6 +110,11 @@ function App() {
   };
 
   const handleDeleteCertificate = async (certificateId, fileName) => {
+    if (!supabase) {
+      showNotification('Supabase not configured. Cannot delete files.', 'error');
+      return;
+    }
+
     try {
       const { error } = await supabase.storage
         .from('certificates')
@@ -112,6 +133,11 @@ function App() {
   };
 
   const handleDownloadCertificate = async (certificate) => {
+    if (!supabase) {
+      showNotification('Supabase not configured. Cannot download files.', 'error');
+      return;
+    }
+
     try {
       const { data, error } = await supabase.storage
         .from('certificates')
@@ -139,7 +165,7 @@ function App() {
 
   const showNotification = (message, type) => {
     setNotification({ message, type });
-    setTimeout(() => setNotification(null), 3000);
+    setTimeout(() => setNotification(null), 5000);
   };
 
   const formatFileSize = (bytes) => {
@@ -195,37 +221,72 @@ function App() {
           </button>
         </header>
 
-        <section className="upload-section">
-          <h2 className="upload-title">Upload Your Certificates</h2>
-          <div className="upload-area" onClick={handleUploadAreaClick}>
-            <div className="upload-icon">
-              {isUploading ? <div className="loading-spinner"></div> : '📄'}
-              }
+        {!isSupabaseConfigured && (
+          <div className="upload-section">
+            <h2 className="upload-title">⚠️ Setup Required</h2>
+            <div style={{ 
+              background: 'rgba(255, 193, 7, 0.1)', 
+              border: '2px solid rgba(255, 193, 7, 0.3)',
+              borderRadius: '15px',
+              padding: '30px',
+              textAlign: 'center'
+            }}>
+              <p style={{ fontSize: '1.2rem', marginBottom: '15px', color: isDarkTheme ? '#fff' : '#333' }}>
+                To use CredHex, you need to set up Supabase:
+              </p>
+              <ol style={{ 
+                textAlign: 'left', 
+                maxWidth: '600px', 
+                margin: '0 auto',
+                color: isDarkTheme ? '#ccc' : '#666'
+              }}>
+                <li>Create a Supabase account at <a href="https://supabase.com" target="_blank" rel="noopener noreferrer" style={{ color: '#667eea' }}>supabase.com</a></li>
+                <li>Create a new project</li>
+                <li>Go to Settings → API</li>
+                <li>Copy your Project URL and anon public key</li>
+                <li>Update the .env file with your credentials</li>
+                <li>Create a storage bucket named "certificates"</li>
+              </ol>
             </div>
-            <p className="upload-text">
-              {isUploading ? 'Uploading...' : 'Click to upload or drag and drop'}
-            </p>
-            <p className="upload-subtext">
-              PDF, JPG, PNG files up to 10MB
-            </p>
-            <input
-              ref={fileInputRef}
-              type="file"
-              className="file-input"
-              multiple
-              accept=".pdf,.jpg,.jpeg,.png"
-              onChange={handleFileUpload}
-              disabled={isUploading}
-            />
           </div>
-        </section>
+        )}
+
+        {isSupabaseConfigured && (
+          <section className="upload-section">
+            <h2 className="upload-title">Upload Your Certificates</h2>
+            <div className="upload-area" onClick={handleUploadAreaClick}>
+              <div className="upload-icon">
+                {isUploading ? <div className="loading-spinner"></div> : '📄'}
+              </div>
+              <p className="upload-text">
+                {isUploading ? 'Uploading...' : 'Click to upload or drag and drop'}
+              </p>
+              <p className="upload-subtext">
+                PDF, JPG, PNG files up to 10MB
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                className="file-input"
+                multiple
+                accept=".pdf,.jpg,.jpeg,.png"
+                onChange={handleFileUpload}
+                disabled={isUploading}
+              />
+            </div>
+          </section>
+        )}
 
         <section className="certificates-section">
           {certificates.length === 0 ? (
             <div className="empty-state">
               <div className="empty-icon">📋</div>
-              <p className="empty-text">No certificates uploaded yet</p>
-              <p className="empty-subtext">Upload your first certificate to get started</p>
+              <p className="empty-text">
+                {isSupabaseConfigured ? 'No certificates uploaded yet' : 'Configure Supabase to get started'}
+              </p>
+              <p className="empty-subtext">
+                {isSupabaseConfigured ? 'Upload your first certificate to get started' : 'Follow the setup instructions above'}
+              </p>
             </div>
           ) : (
             <div className="certificates-grid">
