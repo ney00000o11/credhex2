@@ -10,7 +10,18 @@ let supabase = null;
 if (supabaseUrl && supabaseAnonKey && 
     supabaseUrl !== 'https://your-project.supabase.co' && 
     supabaseAnonKey !== 'your-anon-key') {
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
+  try {
+    supabase = createClient(supabaseUrl, supabaseAnonKey, {
+      auth: {
+        autoRefreshToken: true,
+        persistSession: true,
+        detectSessionInUrl: true
+      }
+    });
+  } catch (error) {
+    console.error('Failed to initialize Supabase client:', error);
+    supabase = null;
+  }
 } else {
   console.warn('Supabase configuration missing. Please set up your environment variables.');
 }
