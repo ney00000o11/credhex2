@@ -97,6 +97,7 @@ const AuthForm = ({ onLogin, onSignup, isLoading }) => {
                 disabled={isLoading}
               />
               {errors.email && <span className="error-text">{errors.email}</span>}
+              }
               
               <input
                 className={`flip-card__input ${errors.password ? 'error' : ''}`}
@@ -108,6 +109,7 @@ const AuthForm = ({ onLogin, onSignup, isLoading }) => {
                 disabled={isLoading}
               />
               {errors.password && <span className="error-text">{errors.password}</span>}
+              }
               
               <button className="flip-card__btn" type="submit" disabled={isLoading}>
                 {isLoading ? 'Signing in...' : 'Login'}
@@ -129,6 +131,7 @@ const AuthForm = ({ onLogin, onSignup, isLoading }) => {
                 disabled={isLoading}
               />
               {errors.email && <span className="error-text">{errors.email}</span>}
+              }
               
               <input
                 className={`flip-card__input ${errors.password ? 'error' : ''}`}
@@ -140,6 +143,7 @@ const AuthForm = ({ onLogin, onSignup, isLoading }) => {
                 disabled={isLoading}
               />
               {errors.password && <span className="error-text">{errors.password}</span>}
+              }
               
               <input
                 className={`flip-card__input ${errors.confirmPassword ? 'error' : ''}`}
@@ -151,6 +155,7 @@ const AuthForm = ({ onLogin, onSignup, isLoading }) => {
                 disabled={isLoading}
               />
               {errors.confirmPassword && <span className="error-text">{errors.confirmPassword}</span>}
+              }
               
               <button className="flip-card__btn" type="submit" disabled={isLoading}>
                 {isLoading ? 'Creating...' : 'Sign Up'}
